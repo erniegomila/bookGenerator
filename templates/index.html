@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Children's Book Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark light;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: radial-gradient(circle at top, #1f2933, #020617);
+      color: #e5e7eb;
+      padding: 2rem 1rem;
+    }
+    .card {
+      width: 100%;
+      max-width: 960px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 1.5rem;
+      padding: 2rem 2.5rem;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(148, 163, 184, 0.25);
+      backdrop-filter: blur(16px);
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin: 0 0 0.25rem;
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: #9ca3af;
+      margin-bottom: 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 800px) {
+      .card {
+        padding: 1.5rem;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    input[type="number"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 0.75rem;
+      border: 1px solid #4b5563;
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+      background: rgba(15, 23, 42, 0.98);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      max-height: 260px;
+    }
+    .field-group {
+      margin-bottom: 1rem;
+    }
+    .hint {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 0.15rem;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      accent-color: #38bdf8;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(15, 118, 110, 0.1);
+      color: #5eead4;
+      border: 1px solid rgba(34, 197, 190, 0.4);
+    }
+    .button-row {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      padding: 0.6rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease, opacity 0.1s ease;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+    }
+    .btn-secondary:hover {
+      background: rgba(15, 23, 42, 0.9);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      color: #0b1120;
+      box-shadow: 0 12px 30px rgba(34, 197, 94, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.6);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 24px rgba(34, 197, 94, 0.5);
+    }
+    .flash {
+      margin-bottom: 1rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 0.75rem;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.6);
+      font-size: 0.85rem;
+      color: #fecaca;
+    }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .section-title span {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    /* Loading overlay + spinner */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+    }
+    .loading-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.4rem 1.8rem;
+      border-radius: 1rem;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(148, 163, 184, 0.4);
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 3px solid rgba(148, 163, 184, 0.4);
+      border-top-color: #38bdf8;
+      animation: spin 0.6s linear infinite;
+    }
+    .loading-text {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    function togglePrefaceUpload() {
+      const checkbox = document.getElementById("use_default_preface");
+      const uploadGroup = document.getElementById("preface_upload_group");
+      if (!checkbox || !uploadGroup) return;
+      uploadGroup.style.display = checkbox.checked ? "none" : "block";
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      togglePrefaceUpload();
+
+      const form = document.querySelector("form");
+      const overlay = document.getElementById("loading_overlay");
+      if (form && overlay) {
+        form.addEventListener("submit", () => {
+          overlay.style.display = "flex";
+          const buttons = form.querySelectorAll("button");
+          buttons.forEach(b => {
+            b.disabled = true;
+            b.style.opacity = "0.7";
+          });
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Loading overlay (hidden by default) -->
+  <div id="loading_overlay" class="loading-overlay" style="display:none;">
+    <div class="loading-inner">
+      <div class="spinner"></div>
+      <div class="loading-text">Generating and loading preview…</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem;">
+      <div>
+        <h1>Children's Book PDF Generator</h1>
+        <div class="subtitle">
+          Upload a JSON manuscript, optional images (1.png, 2.png, …), and generate a print-ready book with a preface and page-matched colors.
+        </div>
+      </div>
+      <div class="pill">
+        v1 · Local builder
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" enctype="multipart/form-data">
+      <div class="grid">
+        <div>
+          <div class="section-title">
+            Manuscript
+            <span>JSON format with title, author, pages</span>
+          </div>
+
+          <div class="field-group">
+            <label for="manuscript_file">Upload manuscript JSON file</label>
+            <input type="file" id="manuscript_file" name="manuscript_file" accept="application/json" />
+            <div class="hint">Or paste JSON below instead.</div>
+          </div>
+
+          <div class="field-group">
+            <label for="manuscript_text">Or paste manuscript JSON</label>
+            <textarea id="manuscript_text" name="manuscript_text" placeholder='{"title": "...", "author": "...", "pages": ["Page 1 text", "..."]}'></textarea>
+          </div>
+
+          <div class="section-title" style="margin-top:1.25rem;">
+            Images
+            <span>Optional page illustrations</span>
+          </div>
+
+          <div class="field-group">
+            <label for="images">Upload page images (1.png, 2.png, ...)</label>
+            <input type="file" id="images" name="images" accept="image/*" multiple />
+            <div class="hint">Images are matched by number: 1.png → first page, 2.png → second page, etc.</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">
+            Layout & Preface
+            <span>Trim size, margins, colors</span>
+          </div>
+
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div class="field-group">
+              <label for="page_width_inch">Page width (inches)</label>
+              <input
+                type="number"
+                id="page_width_inch"
+                name="page_width_inch"
+                step="0.001"
+                value="{{ default_page_width_inch }}"
+              />
+              <div class="hint">Example: 8.625</div>
+            </div>
+            <div class="field-group">
+              <label for="page_height_inch">Page height (inches)</label>
+              <input
+                type="number"
+                id="page_height_inch"
+                name="page_height_inch"
+                step="0.001"
+                value="{{ default_page_height_inch }}"
+              />
+              <div class="hint">Example: 8.75</div>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div class="field-group">
+              <label for="margin_inch">Margin (inches)</label>
+              <input
+                type="number"
+                id="margin_inch"
+                name="margin_inch"
+                step="0.05"
+                value="{{ default_margin_inch }}"
+              />
+            </div>
+            <div class="field-group">
+              <label for="font_size">Font size (pt)</label>
+              <input
+                type="number"
+                id="font_size"
+                name="font_size"
+                min="6"
+                max="72"
+                value="{{ default_font_size }}"
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="output_name">Output filename</label>
+            <input
+              type="text"
+              id="output_name"
+              name="output_name"
+              value="{{ default_output_name }}"
+            />
+          </div>
+
+          <div class="checkbox-row" style="margin-top:0.75rem;">
+            <input
+              type="checkbox"
+              id="use_default_preface"
+              name="use_default_preface"
+              value="1"
+              checked
+              onchange="togglePrefaceUpload()"
+            />
+            <label for="use_default_preface" style="margin:0;">
+              Use default preface <code>rfh.pdf</code> from project root
+            </label>
+          </div>
+
+          <div id="preface_upload_group" class="field-group">
+            <label for="preface_file">Or upload a custom preface PDF</label>
+            <input type="file" id="preface_file" name="preface_file" accept="application/pdf" />
+            <div class="hint">If left empty and the checkbox is on, the app uses rfh.pdf.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button type="reset" class="btn-secondary">Reset</button>
+        <button type="submit" class="btn-primary">
+          Generate & Preview
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
