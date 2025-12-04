@@ -2,7 +2,7 @@ services:
   - type: web
     name: book-generator
     env: python
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "python -m pip install --upgrade pip && python -m pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
     plan: free
     envVars:
