@@ -255,11 +255,11 @@
       <div>
         <h1>Children's Book PDF Generator</h1>
         <div class="subtitle">
-          Upload a JSON manuscript, optional images (1.png, 2.png, …), and generate a print-ready book with a preface and page-matched colors.
+          Upload a manuscript, images, and generate KDP-ready childrens books. 
         </div>
       </div>
       <div class="pill">
-        v1 · Local builder
+        v1 - EG
       </div>
     </div>
 
@@ -276,27 +276,27 @@
         <div>
           <div class="section-title">
             Manuscript
-            <span>JSON format with title, author, pages</span>
+            
           </div>
 
           <div class="field-group">
-            <label for="manuscript_file">Upload manuscript JSON file</label>
+           
             <input type="file" id="manuscript_file" name="manuscript_file" accept="application/json" />
             <div class="hint">Or paste JSON below instead.</div>
           </div>
 
           <div class="field-group">
-            <label for="manuscript_text">Or paste manuscript JSON</label>
+            
             <textarea id="manuscript_text" name="manuscript_text" placeholder='{"title": "...", "author": "...", "pages": ["Page 1 text", "..."]}'></textarea>
           </div>
 
           <div class="section-title" style="margin-top:1.25rem;">
             Images
-            <span>Optional page illustrations</span>
+            
           </div>
 
           <div class="field-group">
-            <label for="images">Upload page images (1.png, 2.png, ...)</label>
+          
             <input type="file" id="images" name="images" accept="image/*" multiple />
             <div class="hint">Images are matched by number: 1.png → first page, 2.png → second page, etc.</div>
           </div>
