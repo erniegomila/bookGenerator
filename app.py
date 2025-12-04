@@ -2,8 +2,8 @@
 import os
 import json
 import uuid
-import shutil
 from pathlib import Path
+import shutil  # <-- added
 
 from flask import (
     Flask,
@@ -48,8 +48,6 @@ def index():
         page_height_inch = _safe_float(request.form.get("page_height_inch"), 8.75)
         output_name = request.form.get("output_name") or "children_book.pdf"
 
-        use_default_preface = request.form.get("use_default_preface") == "on"
-
         manuscript_file = request.files.get("manuscript_file")
         manuscript_text = request.form.get("manuscript_text", "").strip()
 
@@ -63,6 +61,11 @@ def index():
         run_id = str(uuid.uuid4())
         run_dir = RUNS_DIR / run_id
         run_dir.mkdir(parents=True, exist_ok=True)
+
+        # delete all other runs so only the latest one uses space
+        for existing in RUNS_DIR.iterdir():
+            if existing.is_dir() and existing.name != run_id:
+                shutil.rmtree(existing, ignore_errors=True)
 
         images_dir = run_dir / "images"
         images_dir.mkdir(exist_ok=True)
@@ -80,23 +83,14 @@ def index():
         with open(manuscript_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-        preface_path = None
-        if use_default_preface:
-            if preface_file and preface_file.filename:
-                preface_path = run_dir / "preface.pdf"
-                preface_file.save(preface_path)
-            else:
-                default_preface = BASE_DIR / "rfh.pdf"
-                if not default_preface.exists():
-                    flash("Default preface (rfh.pdf) not found in project directory.")
-                    return redirect(url_for("index"))
-                preface_path = default_preface
+        if preface_file and preface_file.filename:
+            preface_path = run_dir / "preface.pdf"
+            preface_file.save(preface_path)
         else:
-            if preface_file and preface_file.filename:
-                preface_path = run_dir / "preface.pdf"
-                preface_file.save(preface_path)
-            else:
-                preface_path = None
+            preface_path = BASE_DIR / "rfh.pdf"
+            if not preface_path.exists():
+                flash("No preface file uploaded and rfh.pdf not found in project directory.")
+                return redirect(url_for("index"))
 
         for img in images_files:
             if not img.filename:
@@ -118,16 +112,13 @@ def index():
                 page_height_inch=page_height_inch,
             )
 
-            if preface_path:
-                merge_preface_and_book(
-                    preface_path=str(preface_path),
-                    inner_book_path=str(inner_book_path),
-                    final_output=str(final_output),
-                    page_width_inch=page_width_inch,
-                    page_height_inch=page_height_inch,
-                )
-            else:
-                shutil.copyfile(inner_book_path, final_output)
+            merge_preface_and_book(
+                preface_path=str(preface_path),
+                inner_book_path=str(inner_book_path),
+                final_output=str(final_output),
+                page_width_inch=page_width_inch,
+                page_height_inch=page_height_inch,
+            )
         except Exception as e:
             flash(f"Error generating book: {e}")
             return redirect(url_for("index"))
@@ -143,7 +134,6 @@ def index():
         default_output_name="children_book.pdf",
         default_page_width_inch=8.625,
         default_page_height_inch=8.75,
-        default_use_default_preface=True,
     )
 
 
